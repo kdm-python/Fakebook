@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Fakebook Python Exercise</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Pyodide -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.js"></script>
+</head>
+
+<body>
+
+    <header>
+        <div class="title">
+            Fakebook Python Exercise
+        </div>
+
+        <button id="runButton" disabled>
+            Loading Python...
+        </button>
+    </header>
+
+    <main>
+
+        <!-- LEFT: Python code -->
+        <section class="code-panel">
+
+            <div class="panel-title">
+                main.py
+            </div>
+
+            <textarea id="codeEditor" spellcheck="false"></textarea>
+
+        </section>
+
+
+        <!-- RIGHT: Console -->
+        <section class="console-panel">
+
+            <div class="panel-title">
+                Console
+            </div>
+
+            <div id="console"></div>
+
+            <div id="inputArea" class="input-area hidden">
+                <input type="text" id="userInput" autocomplete="off">
+
+                <button id="submitInput">
+                    Enter
+                </button>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
