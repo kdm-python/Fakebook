@@ -1,34 +1,31 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Fakebook Python Exercise</title>
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
 
     <!-- Pyodide -->
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.js"></script>
-</head>
+    <script
+      src="https://cdn.jsdelivr.net/pyodide/v0.29.3/full/pyodide.js"
+      integrity="sha384-Hcsv6LxK5rH9vVB+a/+cLJZR3kIIM2Y851r6waxy+9JInvSROiD1bTMk748pYdat"
+      crossorigin="anonymous"
+    ></script>
+  </head>
 
-<body>
-
+  <body>
     <header>
-        <div class="title">
-            Fakebook Python Exercise
-        </div>
+      <div class="title">Fakebook Python Exercise</div>
 
-        <button id="runButton" disabled>
-            Loading Python...
-        </button>
+      <button id="runButton" disabled>Loading Python...</button>
     </header>
 
     <main>
-
-        <!-- LEFT: Python code -->
-        <!-- <section class="code-panel">
+      <!-- LEFT: Python code -->
+      <!-- <section class="code-panel">
 
             <div class="panel-title">
                 main.py
@@ -38,9 +35,8 @@
 
         </section> -->
 
-
-        <!-- RIGHT: Console -->
-        <!-- <section class="console-panel">
+      <!-- RIGHT: Console -->
+      <!-- <section class="console-panel">
 
             <div class="panel-title">
                 Console
@@ -57,35 +53,28 @@
             </div>
 
         </section> -->
-<section class="console-panel">
+      <section class="console-panel">
+        <div class="panel-title">Console</div>
 
-    <div class="panel-title">
-        Console
-    </div>
+        <div class="console-window">
+          <div id="consoleOutput"></div>
 
-    <div class="console-window">
-
-        <div id="consoleOutput"></div>
-
-        <div id="inputArea" class="input-area hidden">
-
+          <div id="inputArea" class="input-area hidden">
             <span id="inputPrompt"></span>
 
-            <input type="text" id="userInput" autocomplete="off" spellcheck="false">
+            <input
+              type="text"
+              id="userInput"
+              autocomplete="off"
+              spellcheck="false"
+            />
 
-            <button id="submitInput">
-                Enter
-            </button>
-
+            <button id="submitInput">Enter</button>
+          </div>
         </div>
-
-    </div>
-
-</section>
+      </section>
     </main>
 
     <script src="app.js"></script>
-
-</body>
-
+  </body>
 </html>
