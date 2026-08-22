@@ -15,12 +15,13 @@ for item in banned:
         invalid = True
 
 if username == "george" and password == "RedSimpsons" and not invalid:
-    print("Welcome George")
-    print()
-    print("Enter the following URL into a web browser:")
-    print()
-    print("ncce.io/cybs-3-a0-rf1")
+    print("Welcome George\n")
+    login_success = True
+    # print()
+    # print("Enter the following URL into a web browser:")
+    # print()
+    # print("ncce.io/cybs-3-a0-rf1")
 else:
-    print()
     print("Incorrect password, try again")
     print("Hint: ColourTV")
+    login_success = False

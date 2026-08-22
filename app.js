@@ -40,9 +40,9 @@ function getInput(promptText = "") {
     userInput.type = "text";
 
     // Make password input behave like a password field.
-    if (promptText.toLowerCase().includes("password")) {
-      userInput.type = "password";
-    }
+    // if (promptText.toLowerCase().includes("password")) {
+    //   userInput.type = "password";
+    // }
 
     userInput.value = "";
     userInput.focus();
@@ -187,7 +187,14 @@ async def __run_exercise():
                     kw_defaults=[],
                     defaults=[]
                 ),
-                body=tree.body,
+                body=tree.body + [
+                    ast.Return(
+                        value=ast.Name(
+                            id="login_success",
+                            ctx=ast.Load()
+                        )
+                    )
+                ],
                 decorator_list=[]
             )
         ],
@@ -208,13 +215,23 @@ async def __run_exercise():
         namespace
     )
 
-    await namespace["__student_code"]()
+    return await namespace["__student_code"]()
 
 
 await __run_exercise()
 `;
+    const loginSuccess = await pyodide.runPythonAsync(runner);
 
-    await pyodide.runPythonAsync(runner);
+    if (loginSuccess === true) {
+      window.location.href = "fakebook/";
+    }
+    // await pyodide.runPythonAsync(runner);
+
+    // const loginSuccess = pyodide.globals.get("login_success");
+
+    // if (loginSuccess === true) {
+    //   window.location.href = "fakebook/";
+    // }
   } catch (error) {
     writeOutput("\\nPython error:\\n");
     writeOutput(error.toString());
