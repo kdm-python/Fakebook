@@ -3,6 +3,7 @@ print("********************")
 print()
 
 username = input("Please enter your username: ")
+print()
 password = input("Please enter your password: ")
 print()
 
@@ -20,6 +21,6 @@ if username == "george" and password == "RedSimpsons" and not invalid:
     print()
     print("ncce.io/cybs-3-a0-rf1")
 else:
-    print("Incorrect password, try again")
     print()
+    print("Incorrect password, try again")
     print("Hint: ColourTV")

@@ -138,3 +138,67 @@ main {
 .hidden {
     display: none;
 }
+
+/* -------------------------
+   Console area
+   ------------------------- */
+
+.console-window {
+    background: #fff;
+    color: #111;
+    padding: 16px;
+    min-height: 400px;
+    overflow-y: auto;
+
+    font-family: monospace;
+    font-size: 16px;
+    line-height: 1.5;
+
+    box-sizing: border-box;
+}
+
+#consoleOutput {
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+.input-area {
+    display: flex;
+    align-items: baseline;
+    width: 100%;
+    font-family: monospace;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.input-area.hidden {
+    display: none;
+}
+
+#inputPrompt {
+    white-space: pre;
+}
+
+#userInput {
+    flex: 1;
+
+    border: none;
+    outline: none;
+
+    background: transparent;
+    color: inherit;
+
+    padding: 0;
+    margin: 0;
+
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+
+    min-width: 20px;
+}
+
+#submitInput {
+    /* margin-left: 10px; */
+    display: none;
+}
