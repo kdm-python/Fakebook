@@ -95,6 +95,7 @@ async function loadExercise() {
 // --------------------------------------------------
 
 async function runPython() {
+  console.log("NEW APP.JS VERSION - LOGIN RETURN FIX");
   if (!pyodide) {
     return;
   }
