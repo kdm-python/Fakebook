@@ -1,10 +1,10 @@
 #!/bin/sh
 set -eu
 
-REPO_URL="${REPO_URL:-https://github.com/REPLACE_ME/fakebook-python.git}"
+REPO_URL="${REPO_URL:-https://github.com/kdm-python/fakebook-python.git}"
 REPO_BRANCH="${REPO_BRANCH:-main}"
-APP_DIR="${APP_DIR:-/opt/fakebook/app}"
-SERVICE_USER="${SERVICE_USER:-fakebook}"
+APP_DIR="${APP_DIR:-/srv/bytelets}"
+SERVICE_USER="${SERVICE_USER:-bytelets}"
 UV_BIN="${UV_BIN:-/usr/local/bin/uv}"
 ENV_SOURCE="${ENV_SOURCE:-}"
 
