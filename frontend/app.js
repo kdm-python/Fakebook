@@ -1,0 +1,191 @@
+const exerciseSelect = document.getElementById("exerciseSelect");
+const exerciseDescription = document.getElementById("exerciseDescription");
+const runButton = document.getElementById("runButton");
+const stopButton = document.getElementById("stopButton");
+const clearButton = document.getElementById("clearButton");
+const connectionStatus = document.getElementById("connectionStatus");
+const consoleWindow = document.getElementById("consoleWindow");
+const consoleOutput = document.getElementById("consoleOutput");
+const inputForm = document.getElementById("inputForm");
+const userInput = document.getElementById("userInput");
+
+let exercises = [];
+let socket = null;
+let runFinished = true;
+
+function setStatus(text, state) {
+  connectionStatus.textContent = text;
+  connectionStatus.dataset.state = state;
+}
+
+function setRunning(isRunning) {
+  runFinished = !isRunning;
+  runButton.disabled = isRunning || exercises.length === 0;
+  stopButton.disabled = !isRunning;
+  exerciseSelect.disabled = isRunning || exercises.length === 0;
+  inputForm.classList.toggle("hidden", !isRunning);
+
+  if (isRunning) {
+    userInput.value = "";
+    userInput.focus();
+    setStatus("Running", "running");
+  }
+}
+
+function writeOutput(text) {
+  consoleOutput.textContent += text;
+  consoleWindow.scrollTop = consoleWindow.scrollHeight;
+}
+
+function clearConsole() {
+  consoleOutput.textContent = "";
+}
+
+function selectedExercise() {
+  return exercises.find((exercise) => exercise.id === exerciseSelect.value);
+}
+
+function updateExerciseDescription() {
+  const exercise = selectedExercise();
+  exerciseDescription.textContent = exercise?.description ?? "";
+}
+
+async function loadExercises() {
+  try {
+    const response = await fetch("/api/exercises", {
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status}`);
+    }
+
+    const data = await response.json();
+    exercises = data.exercises ?? [];
+
+    exerciseSelect.replaceChildren(
+      ...exercises.map((exercise) => {
+        const option = document.createElement("option");
+        option.value = exercise.id;
+        option.textContent = exercise.title;
+        return option;
+      }),
+    );
+
+    if (exercises.length === 0) {
+      exerciseSelect.innerHTML = "<option>No exercises available</option>";
+      exerciseDescription.textContent = "No exercises are configured on the server.";
+      setStatus("No exercises", "error");
+      return;
+    }
+
+    exerciseSelect.disabled = false;
+    runButton.disabled = false;
+    updateExerciseDescription();
+    setStatus("Ready", "ready");
+  } catch (error) {
+    exerciseDescription.textContent = "The exercise server could not be reached.";
+    clearConsole();
+    writeOutput(`Connection error: ${error.message}`);
+    setStatus("Offline", "error");
+  }
+}
+
+function startRun() {
+  const exercise = selectedExercise();
+  if (!exercise || (socket && socket.readyState < WebSocket.CLOSING)) {
+    return;
+  }
+
+  clearConsole();
+  setRunning(true);
+
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const url = `${protocol}//${window.location.host}/api/runs/${encodeURIComponent(exercise.id)}`;
+  socket = new WebSocket(url);
+
+  socket.addEventListener("message", (event) => {
+    const message = JSON.parse(event.data);
+
+    if (message.type === "output") {
+      writeOutput(message.text);
+      return;
+    }
+
+    if (message.type === "completed") {
+      finishRun(message);
+    }
+  });
+
+  socket.addEventListener("error", () => {
+    if (!runFinished) {
+      writeOutput("\nConnection to the exercise server was lost.\n");
+      setStatus("Connection error", "error");
+    }
+  });
+
+  socket.addEventListener("close", (event) => {
+    if (!runFinished) {
+      setRunning(false);
+      if (event.code !== 1000) {
+        writeOutput("\nThe exercise ended unexpectedly.\n");
+        setStatus("Stopped", "error");
+      }
+    }
+    socket = null;
+  });
+}
+
+function finishRun(message) {
+  setRunning(false);
+
+  if (message.reason === "stopped") {
+    writeOutput("\nExercise stopped.\n");
+    setStatus("Stopped", "ready");
+  } else if (message.reason === "timeout") {
+    writeOutput("\nExercise stopped because it took too long.\n");
+    setStatus("Timed out", "error");
+  } else if (message.reason === "output_limit") {
+    writeOutput("\nExercise stopped after producing too much output.\n");
+    setStatus("Output limit", "error");
+  } else if (message.error) {
+    setStatus("Program error", "error");
+  } else if (message.success) {
+    setStatus("Completed", "success");
+  } else {
+    setStatus("Finished", "ready");
+  }
+
+  if (message.success && message.successPath) {
+    window.setTimeout(() => {
+      window.location.assign(message.successPath);
+    }, 350);
+  }
+}
+
+function stopRun() {
+  if (socket?.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({ type: "stop" }));
+    stopButton.disabled = true;
+    setStatus("Stopping", "loading");
+  }
+}
+
+inputForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (socket?.readyState !== WebSocket.OPEN) {
+    return;
+  }
+
+  const value = userInput.value;
+  socket.send(JSON.stringify({ type: "input", value }));
+  writeOutput(`${value}\n`);
+  userInput.value = "";
+  userInput.focus();
+});
+
+exerciseSelect.addEventListener("change", updateExerciseDescription);
+runButton.addEventListener("click", startRun);
+stopButton.addEventListener("click", stopRun);
+clearButton.addEventListener("click", clearConsole);
+
+loadExercises();

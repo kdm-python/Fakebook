@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Run interactive Python classroom exercises." />
+    <title>Python Exercise Runner</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">&gt;_</span>
+        <div>
+          <div class="brand-title">Python Exercise Runner</div>
+          <div class="brand-subtitle">Interactive classroom exercises</div>
+        </div>
+      </div>
+      <div id="connectionStatus" class="status-pill" data-state="loading">
+        Connecting
+      </div>
+    </header>
+
+    <main class="page-shell">
+      <section class="exercise-card" aria-labelledby="exerciseHeading">
+        <div class="exercise-copy">
+          <p class="eyebrow">Exercise</p>
+          <h1 id="exerciseHeading">Choose a Python exercise</h1>
+          <p id="exerciseDescription" class="exercise-description">
+            Loading the available exercises…
+          </p>
+        </div>
+
+        <div class="exercise-controls">
+          <label for="exerciseSelect">Available exercise</label>
+          <select id="exerciseSelect" disabled>
+            <option>Loading…</option>
+          </select>
+          <div class="button-row">
+            <button id="runButton" class="button button-primary" disabled>
+              Run exercise
+            </button>
+            <button id="stopButton" class="button button-secondary" disabled>
+              Stop
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="console-card" aria-labelledby="consoleHeading">
+        <div class="console-header">
+          <div>
+            <p class="eyebrow">Program output</p>
+            <h2 id="consoleHeading">Console</h2>
+          </div>
+          <button id="clearButton" class="text-button" type="button">Clear</button>
+        </div>
+
+        <div
+          id="consoleWindow"
+          class="console-window"
+          role="log"
+          aria-live="polite"
+          aria-label="Python program output"
+        >
+          <div id="consoleOutput">Ready. Choose an exercise and press Run.</div>
+          <form id="inputForm" class="console-input hidden" autocomplete="off">
+            <span class="prompt-marker" aria-hidden="true">›</span>
+            <label class="sr-only" for="userInput">Program input</label>
+            <input
+              id="userInput"
+              type="text"
+              spellcheck="false"
+              placeholder="Type a response and press Enter"
+            />
+            <button class="input-submit" type="submit">Enter</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      Python runs privately on the exercise server. Only prompts and output are sent
+      to this page.
+    </footer>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>
