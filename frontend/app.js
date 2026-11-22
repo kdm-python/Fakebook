@@ -10,11 +10,39 @@ const consoleWindow = document.getElementById("consoleWindow");
 const consoleOutput = document.getElementById("consoleOutput");
 const inputForm = document.getElementById("inputForm");
 const userInput = document.getElementById("userInput");
+const passwordHistory = document.getElementById("passwordHistory");
+const passwordAttempts = document.getElementById("passwordAttempts");
 
 let exercises = [];
 let socket = null;
 let runFinished = true;
 let currentPrompt = "";
+let attemptedPasswords = [];
+let pendingPassword = null;
+
+function resetPasswordHistory() {
+  attemptedPasswords = [];
+  pendingPassword = null;
+  passwordAttempts.replaceChildren();
+  passwordHistory.classList.add("hidden");
+}
+
+function recordPasswordAttempt(value) {
+  attemptedPasswords.unshift(value);
+  const attemptCount = attemptedPasswords.length;
+  passwordAttempts.replaceChildren(
+    ...attemptedPasswords.map((password, index) => {
+      const item = document.createElement("li");
+      const number = document.createElement("span");
+      const attempt = document.createElement("code");
+      number.textContent = `${attemptCount - index}.`;
+      attempt.textContent = password;
+      item.append(number, attempt);
+      return item;
+    }),
+  );
+  passwordHistory.classList.remove("hidden");
+}
 
 function setPasswordMode(isPassword) {
   userInput.type = isPassword ? "password" : "text";
@@ -121,6 +149,7 @@ function startRun() {
   }
 
   clearConsole();
+  resetPasswordHistory();
   setRunning(true);
 
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -134,7 +163,12 @@ function startRun() {
       writeOutput(message.text);
       currentPrompt += message.text;
       const currentLine = currentPrompt.slice(currentPrompt.lastIndexOf("\n") + 1);
-      setPasswordMode(/\bpassword\b/i.test(currentLine));
+      const isPasswordPrompt = /\bpassword\b/i.test(currentLine);
+      if (isPasswordPrompt && pendingPassword !== null) {
+        recordPasswordAttempt(pendingPassword);
+        pendingPassword = null;
+      }
+      setPasswordMode(isPasswordPrompt);
       return;
     }
 
@@ -163,6 +197,10 @@ function startRun() {
 }
 
 function finishRun(message) {
+  if (!message.success && pendingPassword !== null) {
+    recordPasswordAttempt(pendingPassword);
+  }
+  pendingPassword = null;
   setRunning(false);
 
   if (message.reason === "stopped") {
@@ -206,6 +244,9 @@ inputForm.addEventListener("submit", (event) => {
   const value = userInput.value;
   const isPassword = userInput.type === "password";
   socket.send(JSON.stringify({ type: "input", value }));
+  if (isPassword) {
+    pendingPassword = value;
+  }
   writeOutput(`${isPassword ? "•".repeat(value.length) : value}\n`);
   userInput.value = "";
   currentPrompt = "";

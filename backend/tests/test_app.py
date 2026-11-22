@@ -124,7 +124,15 @@ def test_original_exercise_failure() -> None:
 
         while "Please enter your password: " not in "".join(output):
             receive_until(websocket, "output", output)
-        websocket.send_json({"type": "input", "value": "wrong"})
+        for _ in range(3):
+            websocket.send_json({"type": "input", "value": "wrong"})
+            if _ < 2:
+                previous_output_length = len("".join(output))
+                while (
+                    "Please enter your password: "
+                    not in "".join(output)[previous_output_length:]
+                ):
+                    receive_until(websocket, "output", output)
         completed = receive_until(websocket, "completed", output)
 
     assert completed["success"] is False

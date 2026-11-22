@@ -336,6 +336,49 @@ select:disabled {
   font-weight: 700;
 }
 
+.password-history {
+  margin-top: 0.65rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #e3c9c3;
+  border-radius: 0.55rem;
+  background: var(--danger-soft);
+}
+
+.password-history h3 {
+  margin: 0 0 0.5rem;
+  color: var(--danger);
+  font-family: var(--sans);
+  font-size: 0.78rem;
+}
+
+.password-history ol {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.password-history li {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 0.55rem;
+}
+
+.password-history li span {
+  min-width: 1.5rem;
+  color: var(--text-muted);
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  text-align: right;
+}
+
+.password-history code {
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
 .hidden {
   display: none;
 }
