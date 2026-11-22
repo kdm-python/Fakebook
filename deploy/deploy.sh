@@ -7,6 +7,7 @@ APP_DIR="${APP_DIR:-/opt/bytelets/app}"
 SERVICE_USER="${SERVICE_USER:-bytelets}"
 UV_BIN="${UV_BIN:-/usr/local/bin/uv}"
 ENV_SOURCE="${ENV_SOURCE:-}"
+DEPLOY_REEXECUTED="${DEPLOY_REEXECUTED:-0}"
 
 if [ "$(id -u)" -ne 0 ]; then
   echo "Run this script as root on the application LXC."
@@ -32,17 +33,27 @@ if ! id "$SERVICE_USER" >/dev/null 2>&1; then
   useradd --system --create-home --shell /usr/sbin/nologin "$SERVICE_USER"
 fi
 
-install -d -o "$SERVICE_USER" -g "$SERVICE_USER" "$(dirname "$APP_DIR")"
+if [ "$DEPLOY_REEXECUTED" != "1" ]; then
+  install -d -o "$SERVICE_USER" -g "$SERVICE_USER" "$(dirname "$APP_DIR")"
 
-if [ -d "$APP_DIR/.git" ]; then
-  git -C "$APP_DIR" fetch origin "$REPO_BRANCH"
-  git -C "$APP_DIR" checkout "$REPO_BRANCH"
-  git -C "$APP_DIR" pull --ff-only origin "$REPO_BRANCH"
-else
-  git clone --branch "$REPO_BRANCH" --single-branch "$REPO_URL" "$APP_DIR"
+  if [ -d "$APP_DIR/.git" ]; then
+    chown -R "$SERVICE_USER:$SERVICE_USER" "$APP_DIR"
+    runuser -u "$SERVICE_USER" -- git -C "$APP_DIR" fetch origin "$REPO_BRANCH"
+    runuser -u "$SERVICE_USER" -- git -C "$APP_DIR" checkout "$REPO_BRANCH"
+    runuser -u "$SERVICE_USER" -- \
+      git -C "$APP_DIR" pull --ff-only origin "$REPO_BRANCH"
+  else
+    runuser -u "$SERVICE_USER" -- \
+      git clone --branch "$REPO_BRANCH" --single-branch "$REPO_URL" "$APP_DIR"
+  fi
+
+  chown -R "$SERVICE_USER:$SERVICE_USER" "$APP_DIR"
+
+  # The checkout may have updated this script. Reload it once so the remainder
+  # of the deployment uses the newly checked-out logic.
+  export REPO_URL REPO_BRANCH APP_DIR SERVICE_USER UV_BIN ENV_SOURCE
+  DEPLOY_REEXECUTED=1 exec "$APP_DIR/deploy/deploy.sh"
 fi
-
-chown -R "$SERVICE_USER:$SERVICE_USER" "$APP_DIR"
 
 if [ ! -f "$APP_DIR/backend/uv.lock" ]; then
   echo "backend/uv.lock is missing; commit the lock file before deploying."
@@ -50,7 +61,7 @@ if [ ! -f "$APP_DIR/backend/uv.lock" ]; then
 fi
 
 cd "$APP_DIR/backend"
-su -s /bin/sh "$SERVICE_USER" -c "'$UV_BIN' sync --locked --no-dev"
+runuser -u "$SERVICE_USER" -- "$UV_BIN" sync --locked --no-dev
 
 install -d -m 0750 -o root -g "$SERVICE_USER" /etc/fakebook
 if [ -n "$ENV_SOURCE" ]; then

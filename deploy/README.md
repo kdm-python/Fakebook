@@ -39,7 +39,23 @@ sh deploy/deploy.sh
 Optional variables are `REPO_BRANCH`, `APP_DIR`, `SERVICE_USER`, and `UV_BIN`.
 Running the same command again updates the checkout and restarts the service.
 For a private repository, configure an SSH deploy key on the LXC separately;
-do not put a token or private key in this repository or its environment example.
+install it for the service user because that user performs Git updates. Do not put
+a token or private key in this repository or its environment example.
+
+The systemd service grants only `CAP_NET_BIND_SERVICE`, allowing the unprivileged
+service user to bind to port 80 when `FAKEBOOK_PORT=80`.
+
+There are two valid first-deployment routes:
+
+- Clone the whole repository manually, enter it, and run `deploy/deploy.sh`. The
+  script detects the existing checkout and updates it.
+- Copy only the deployment script onto a fresh LXC and run it with `REPO_URL`.
+  When `APP_DIR` does not exist, the script clones the whole repository there.
+
+The clone branch exists for the second route. It is naturally unused when the
+repository was cloned manually to obtain the script. After an update or clone,
+the script reloads the checked-out copy once so that deployment continues using
+the latest script logic.
 
 The default application address is port 8000 on the application LXC. Verify it
 from another machine on the LAN:
