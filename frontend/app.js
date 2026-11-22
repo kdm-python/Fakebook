@@ -29,15 +29,12 @@ function resetPasswordHistory() {
 
 function recordPasswordAttempt(value) {
   attemptedPasswords.unshift(value);
-  const attemptCount = attemptedPasswords.length;
   passwordAttempts.replaceChildren(
-    ...attemptedPasswords.map((password, index) => {
+    ...attemptedPasswords.map((password) => {
       const item = document.createElement("li");
-      const number = document.createElement("span");
       const attempt = document.createElement("code");
-      number.textContent = `${attemptCount - index}.`;
       attempt.textContent = password;
-      item.append(number, attempt);
+      item.append(attempt);
       return item;
     }),
   );
