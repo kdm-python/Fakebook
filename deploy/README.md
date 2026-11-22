@@ -21,7 +21,9 @@ Copy and edit the production environment example on your own machine or LXC:
 cp deploy/production.env.example /tmp/fakebook-production.env
 ```
 
-Replace the example public URL and LXC addresses. The Python application uses the
+Replace the example public URL and LXC addresses. Set
+`FAKEBOOK_SCHOOL_DOMAINS` to the parent domain accepted by the application.
+The Python application uses the
 `FAKEBOOK_` settings; the other values are deployment notes/placeholders.
 
 ## 2. Deploy on the application LXC
@@ -48,9 +50,10 @@ curl http://APPLICATION_LXC_IP:8000/api/health
 
 ## 3. Configure the main Nginx LXC
 
-Use `reverse-proxy.example.conf` as a reference. Replace the example domain and
-`192.0.2.20` with the application LXC address. WebSocket upgrade headers are
-required for interactive input.
+Use `reverse-proxy.example.conf` as a reference. Replace `192.0.2.20` with the
+application LXC address. Keep the original Host header, and use WebSocket upgrade
+headers for interactive input. The same virtual host can serve each configured
+school subdomain; TLS and DNS are managed on the main Nginx LXC.
 
 ## 4. Inspect service logs
 

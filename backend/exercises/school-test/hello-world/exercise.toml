@@ -1,0 +1,4 @@
+title = "Hello World"
+description = "A short greeting exercise for testing another school."
+entrypoint = "exercise.py"
+result_variable = "completed"

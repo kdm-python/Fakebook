@@ -78,7 +78,7 @@ select {
 }
 
 .brand-title {
-  font-size: 1rem;
+  font-size: 1.35rem;
   font-weight: 720;
 }
 
@@ -132,11 +132,22 @@ select {
 }
 
 .exercise-card,
-.console-card {
+.console-card,
+.error-card {
   border: 1px solid var(--border);
   border-radius: 1rem;
   background: var(--surface);
   box-shadow: var(--shadow);
+}
+
+.error-shell {
+  min-height: 55vh;
+  align-content: center;
+}
+
+.error-card {
+  max-width: 44rem;
+  padding: clamp(1.75rem, 5vw, 3rem);
 }
 
 .exercise-card {

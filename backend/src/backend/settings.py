@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     forwarded_allow_ips: str = "127.0.0.1"
     frontend_dir: Path = PROJECT_DIR / "frontend"
     exercise_dir: Path = BACKEND_DIR / "exercises"
+    school_domains: str = "bytelets.org,localhost"
     run_timeout_seconds: float = Field(default=60.0, gt=0)
     max_output_bytes: int = Field(default=100_000, gt=0)
 

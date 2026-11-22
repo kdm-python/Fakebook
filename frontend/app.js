@@ -1,4 +1,6 @@
 const exerciseSelect = document.getElementById("exerciseSelect");
+const schoolName = document.getElementById("schoolName");
+const exerciseHeading = document.getElementById("exerciseHeading");
 const exerciseDescription = document.getElementById("exerciseDescription");
 const runButton = document.getElementById("runButton");
 const stopButton = document.getElementById("stopButton");
@@ -12,6 +14,12 @@ const userInput = document.getElementById("userInput");
 let exercises = [];
 let socket = null;
 let runFinished = true;
+let currentPrompt = "";
+
+function setPasswordMode(isPassword) {
+  userInput.type = isPassword ? "password" : "text";
+  userInput.autocomplete = isPassword ? "current-password" : "off";
+}
 
 function setStatus(text, state) {
   connectionStatus.textContent = text;
@@ -27,8 +35,12 @@ function setRunning(isRunning) {
 
   if (isRunning) {
     userInput.value = "";
+    currentPrompt = "";
+    setPasswordMode(false);
     userInput.focus();
     setStatus("Running", "running");
+  } else {
+    setPasswordMode(false);
   }
 }
 
@@ -61,6 +73,8 @@ async function loadExercises() {
 
     const data = await response.json();
     exercises = data.exercises ?? [];
+    schoolName.textContent = data.school.title;
+    document.title = `${data.school.title} · Python Exercise Runner`;
 
     exerciseSelect.replaceChildren(
       ...exercises.map((exercise) => {
@@ -76,6 +90,16 @@ async function loadExercises() {
       exerciseDescription.textContent = "No exercises are configured on the server.";
       setStatus("No exercises", "error");
       return;
+    }
+
+    const exerciseId = decodeURIComponent(window.location.pathname.slice(1).replace(/\/$/, ""));
+    if (exerciseId) {
+      const exercise = exercises.find((item) => item.id === exerciseId);
+      if (!exercise) {
+        throw new Error("This exercise is not available for this school.");
+      }
+      exerciseSelect.value = exerciseId;
+      exerciseHeading.textContent = exercise.title;
     }
 
     exerciseSelect.disabled = false;
@@ -108,6 +132,9 @@ function startRun() {
 
     if (message.type === "output") {
       writeOutput(message.text);
+      currentPrompt += message.text;
+      const currentLine = currentPrompt.slice(currentPrompt.lastIndexOf("\n") + 1);
+      setPasswordMode(/\bpassword\b/i.test(currentLine));
       return;
     }
 
@@ -177,13 +204,30 @@ inputForm.addEventListener("submit", (event) => {
   }
 
   const value = userInput.value;
+  const isPassword = userInput.type === "password";
   socket.send(JSON.stringify({ type: "input", value }));
-  writeOutput(`${value}\n`);
+  writeOutput(`${isPassword ? "•".repeat(value.length) : value}\n`);
   userInput.value = "";
+  currentPrompt = "";
+  setPasswordMode(false);
   userInput.focus();
 });
 
-exerciseSelect.addEventListener("change", updateExerciseDescription);
+exerciseSelect.addEventListener("change", () => {
+  updateExerciseDescription();
+  const exercise = selectedExercise();
+  if (exercise) {
+    window.history.pushState({}, "", `/${encodeURIComponent(exercise.id)}`);
+    exerciseHeading.textContent = exercise.title;
+  }
+});
+window.addEventListener("popstate", () => {
+  const exerciseId = window.location.pathname.slice(1).replace(/\/$/, "");
+  const exercise = exercises.find((item) => item.id === exerciseId);
+  if (exercise) exerciseSelect.value = exercise.id;
+  exerciseHeading.textContent = exercise?.title ?? "Choose a Python exercise";
+  updateExerciseDescription();
+});
 runButton.addEventListener("click", startRun);
 stopButton.addEventListener("click", stopRun);
 clearButton.addEventListener("click", clearConsole);
