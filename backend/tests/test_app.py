@@ -39,9 +39,7 @@ def test_exercise_list_does_not_expose_source_or_credentials() -> None:
 def test_school_hosts_have_separate_exercises_and_pages() -> None:
     miltoncross = client.get("/api/exercises").json()
     other = test_school_client.get("/api/exercises").json()
-    assert {exercise["id"] for exercise in miltoncross["exercises"]} == {
-        "fakebook", "fakebook-alternative", "fakebook-three-attempts"
-    }
+    assert {exercise["id"] for exercise in miltoncross["exercises"]} == {"fakebook"}
     assert other == {
         "school": {"id": "school-test", "title": "School Test"},
         "exercises": [{
@@ -52,6 +50,7 @@ def test_school_hosts_have_separate_exercises_and_pages() -> None:
     }
     assert client.get("/").status_code == 200
     assert client.get("/fakebook").status_code == 200
+    assert client.get("/fakebook-alternative").status_code == 404
     assert test_school_client.get("/hello-world").status_code == 200
     assert client.get("/hello-world").status_code == 404
     assert test_school_client.get("/fakebook").status_code == 404
@@ -114,37 +113,37 @@ def test_original_exercise_success() -> None:
     assert "Welcome George" in "".join(output)
 
 
-def test_original_exercise_failure() -> None:
+def test_original_exercise_allows_unlimited_password_retries() -> None:
     output: list[str] = []
     with client.websocket_connect("/api/runs/fakebook", headers={"host": "miltoncross.localhost:8000"}) as websocket:
         receive_until(websocket, "status", output)
         while "Please enter your username: " not in "".join(output):
             receive_until(websocket, "output", output)
-        websocket.send_json({"type": "input", "value": "wrong"})
+        websocket.send_json({"type": "input", "value": "george"})
 
         while "Please enter your password: " not in "".join(output):
             receive_until(websocket, "output", output)
-        for _ in range(3):
+        for _ in range(25):
             websocket.send_json({"type": "input", "value": "wrong"})
-            if _ < 2:
-                previous_output_length = len("".join(output))
-                while (
-                    "Please enter your password: "
-                    not in "".join(output)[previous_output_length:]
-                ):
-                    receive_until(websocket, "output", output)
+            previous_output_length = len("".join(output))
+            while (
+                "Please enter your password: "
+                not in "".join(output)[previous_output_length:]
+            ):
+                receive_until(websocket, "output", output)
+        websocket.send_json({"type": "input", "value": "RedSimpsons"})
         completed = receive_until(websocket, "completed", output)
 
-    assert completed["success"] is False
-    assert completed["successPath"] is None
+    assert completed["success"] is True
+    assert completed["successPath"] == "/rewards/fakebook/"
     assert "Incorrect password" in "".join(output)
 
 
 def test_running_exercise_can_be_stopped() -> None:
     output: list[str] = []
-    with client.websocket_connect("/api/runs/fakebook-three-attempts", headers={"host": "miltoncross.localhost:8000"}) as websocket:
+    with client.websocket_connect("/api/runs/fakebook", headers={"host": "miltoncross.localhost:8000"}) as websocket:
         receive_until(websocket, "status", output)
-        while "Username: " not in "".join(output):
+        while "Please enter your username: " not in "".join(output):
             receive_until(websocket, "output", output)
         websocket.send_json({"type": "stop"})
         completed = receive_until(websocket, "completed", output)

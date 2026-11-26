@@ -17,12 +17,10 @@ class ExerciseRunner:
         self,
         exercise: Exercise,
         websocket: WebSocket,
-        timeout_seconds: float,
         max_output_bytes: int,
     ) -> None:
         self.exercise = exercise
         self.websocket = websocket
-        self.timeout_seconds = timeout_seconds
         self.max_output_bytes = max_output_bytes
         self.process: asyncio.subprocess.Process | None = None
         self.output_bytes = 0
@@ -126,15 +124,7 @@ class ExerciseRunner:
 
     async def _wait_for_process(self) -> int:
         assert self.process is not None
-        try:
-            return await asyncio.wait_for(
-                self.process.wait(),
-                timeout=self.timeout_seconds,
-            )
-        except TimeoutError:
-            self.stop_reason = "timeout"
-            await self._terminate()
-            return await self.process.wait()
+        return await self.process.wait()
 
     async def _terminate(self) -> None:
         if self.process is None or self.process.returncode is not None:

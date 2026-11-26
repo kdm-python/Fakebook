@@ -60,6 +60,7 @@ The school metadata is `title = "Miltoncross"`. The exercise metadata is:
 ```toml
 title = "Example Exercise"
 description = "A short description shown in the browser."
+include = true
 entrypoint = "exercise.py"
 result_variable = "login_success"
 success_path = "/rewards/fakebook/"
@@ -69,6 +70,9 @@ success_path = "/rewards/fakebook/"
 the school root shows the selector. The Python file can use ordinary `print()` and `input()`. Set the configured
 result variable to `True` when the exercise succeeds. Only the TOML title and
 description are returned by the public API.
+
+Set `include = false` to keep an exercise's files in place while hiding and
+disabling it. Change the value to `true` to enable it.
 
 Restart the application after adding or changing an exercise. The test school
 under `backend/exercises/school-test/` is a small example of a separate school.

@@ -13,7 +13,7 @@ for item in banned:
     if item in username:
         invalid = True
 
-for attempt in range(3):
+while not login_success:
     password = input("Please enter your password: ")
     print()
 
@@ -22,9 +22,5 @@ for attempt in range(3):
         login_success = True
         break
 
-    remaining = 2 - attempt
-    if remaining:
-        print(f"Incorrect password, try again ({remaining} attempt(s) remaining)")
-        print("Hint: ColourTV")
-    else:
-        print("Incorrect password. No attempts remaining.")
+    print("Incorrect password, try again")
+    print("Hint: ColourTV")

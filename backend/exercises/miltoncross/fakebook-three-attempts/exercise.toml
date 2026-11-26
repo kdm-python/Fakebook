@@ -1,5 +1,6 @@
 title = "Fakebook Login: Three Attempts"
 description = "A variation that allows three attempts before finishing."
+include = false
 entrypoint = "exercise.py"
 result_variable = "login_success"
 success_path = "/rewards/fakebook/"

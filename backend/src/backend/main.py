@@ -119,7 +119,7 @@ async def list_exercises(request: Request) -> dict[str, object]:
 async def run_exercise(websocket: WebSocket, exercise_id: str) -> None:
     school_id = school_id_from_host(websocket.headers.get("host", ""))
     exercise = registry.get(school_id, exercise_id) if school_id else None
-    if exercise is None:
+    if exercise is None or not exercise.include:
         await websocket.close(code=1008, reason="Unknown exercise")
         return
 
@@ -127,7 +127,6 @@ async def run_exercise(websocket: WebSocket, exercise_id: str) -> None:
     runner = ExerciseRunner(
         exercise=exercise,
         websocket=websocket,
-        timeout_seconds=settings.run_timeout_seconds,
         max_output_bytes=settings.max_output_bytes,
     )
     await runner.run()
@@ -162,7 +161,8 @@ async def favicon() -> FileResponse:
 @app.get("/{exercise_id}", include_in_schema=False)
 async def exercise_page(request: Request, exercise_id: str) -> FileResponse:
     school_id = request_school(request)
-    if registry.get(school_id, exercise_id) is None:
+    exercise = registry.get(school_id, exercise_id)
+    if exercise is None or not exercise.include:
         raise HTTPException(status_code=404, detail="Unknown exercise")
     return FileResponse(frontend_dir / "index.html")
 

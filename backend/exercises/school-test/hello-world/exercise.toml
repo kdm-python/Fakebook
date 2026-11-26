@@ -1,4 +1,5 @@
 title = "Hello World"
 description = "A short greeting exercise for testing another school."
+include = true
 entrypoint = "exercise.py"
 result_variable = "completed"

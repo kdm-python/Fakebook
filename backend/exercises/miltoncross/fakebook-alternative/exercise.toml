@@ -1,5 +1,6 @@
 title = "Fakebook Login: Alternative"
 description = "A small variation with different sample credentials."
+include = false
 entrypoint = "exercise.py"
 result_variable = "login_success"
 success_path = "/rewards/fakebook/"

@@ -22,6 +22,7 @@ class Exercise:
     exercise_id: str
     title: str
     description: str
+    include: bool
     entrypoint: Path
     result_variable: str
     success_path: str | None
@@ -58,7 +59,7 @@ class ExerciseRegistry:
         exercises: list[Exercise] = []
         for metadata_path in sorted(school.directory.glob("*/exercise.toml")):
             exercise = self.get(school_id, metadata_path.parent.name)
-            if exercise is not None:
+            if exercise is not None and exercise.include:
                 exercises.append(exercise)
         return exercises
 
@@ -81,6 +82,7 @@ class ExerciseRegistry:
             exercise_id=exercise_id,
             title=str(data["title"]),
             description=str(data.get("description", "")),
+            include=bool(data.get("include", False)),
             entrypoint=entrypoint,
             result_variable=str(data.get("result_variable", "login_success")),
             success_path=data.get("success_path"),

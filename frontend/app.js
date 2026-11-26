@@ -12,6 +12,7 @@ const inputForm = document.getElementById("inputForm");
 const userInput = document.getElementById("userInput");
 const passwordHistory = document.getElementById("passwordHistory");
 const passwordAttempts = document.getElementById("passwordAttempts");
+const passwordAttemptCount = document.getElementById("passwordAttemptCount");
 
 let exercises = [];
 let socket = null;
@@ -19,16 +20,23 @@ let runFinished = true;
 let currentPrompt = "";
 let attemptedPasswords = [];
 let pendingPassword = null;
+let passwordAttemptsTotal = 0;
+let isPasswordInput = false;
 
 function resetPasswordHistory() {
   attemptedPasswords = [];
   pendingPassword = null;
+  passwordAttemptsTotal = 0;
+  passwordAttemptCount.textContent = "0";
   passwordAttempts.replaceChildren();
   passwordHistory.classList.add("hidden");
 }
 
 function recordPasswordAttempt(value) {
   attemptedPasswords.unshift(value);
+  attemptedPasswords = attemptedPasswords.slice(0, 20);
+  passwordAttemptsTotal += 1;
+  passwordAttemptCount.textContent = String(passwordAttemptsTotal);
   passwordAttempts.replaceChildren(
     ...attemptedPasswords.map((password) => {
       const item = document.createElement("li");
@@ -42,8 +50,9 @@ function recordPasswordAttempt(value) {
 }
 
 function setPasswordMode(isPassword) {
-  userInput.type = isPassword ? "password" : "text";
-  userInput.autocomplete = isPassword ? "current-password" : "off";
+  isPasswordInput = isPassword;
+  userInput.type = "text";
+  userInput.autocomplete = "off";
 }
 
 function setStatus(text, state) {
@@ -203,9 +212,6 @@ function finishRun(message) {
   if (message.reason === "stopped") {
     writeOutput("\nExercise stopped.\n");
     setStatus("Stopped", "ready");
-  } else if (message.reason === "timeout") {
-    writeOutput("\nExercise stopped because it took too long.\n");
-    setStatus("Timed out", "error");
   } else if (message.reason === "output_limit") {
     writeOutput("\nExercise stopped after producing too much output.\n");
     setStatus("Output limit", "error");
@@ -239,12 +245,12 @@ inputForm.addEventListener("submit", (event) => {
   }
 
   const value = userInput.value;
-  const isPassword = userInput.type === "password";
+  const isPassword = isPasswordInput;
   socket.send(JSON.stringify({ type: "input", value }));
   if (isPassword) {
     pendingPassword = value;
   }
-  writeOutput(`${isPassword ? "•".repeat(value.length) : value}\n`);
+  writeOutput(`${value}\n`);
   userInput.value = "";
   currentPrompt = "";
   setPasswordMode(false);
